@@ -82,3 +82,14 @@ Never add an AI `Co-Authored-By` trailer. **Do** keep the genuine human `Co-auth
 ### Authoring GitHub content via `gh`
 
 Write PR/issue bodies and comments to a file and pass it, rather than inline heredocs: `gh issue comment --body-file <path>`, `gh api -X PATCH … -F body=@<path>`. Inline `--body "$(cat <<EOF … EOF)"` mangles backtick escaping and renders as a literal `` \` `` in GitHub markdown. Same spirit for prose: write paragraphs as continuous lines and let GitHub wrap them — don't hard-wrap at 80 columns.
+
+<!-- openspec-research-setup:start -->
+## OpenSpec (research-first)
+
+Optional workflow for exploratory, cross-module, or quality/migration-heavy changes; clear local low-risk changes keep the normal issue → PR flow. Pure research or docs work does not need invented behaviour specs. Start one explicitly with `openspec new change <name> --schema research-first`, then follow `openspec status --change <name>` and `openspec instructions <artifact> --change <name>`.
+
+- Change artifacts under `openspec/changes/` (research → proposal → specs → design → review → tasks, plus `delivery.md` from `docs/templates/delivery.md`) are written in Chinese; long-term docs under `docs/` stay in English.
+- Ground every claim in the current code, config, tests and docs; mark unproven facts as unverified rather than filling them in. Research may conclude "stop" or "defer".
+- A file existing is not a gate passing. AI self-review must be labelled as such and never presented as human approval. Resolve blockers that affect specs, design or tasks first; when the design moves, update the review and tasks.
+- Each implementation group lands its tests and the affected long-term docs (`docs/architecture.md`, `docs/providers/`, `docs/API.md`) together; the design names the real doc paths. Tick a task only after verifying it. Archiving syncs specs and keeps history; it does not replace updating those docs.
+<!-- openspec-research-setup:end -->

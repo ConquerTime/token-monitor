@@ -1,0 +1,52 @@
+name: research-first
+version: 1
+description: 探索性与系统性变更：调研 → 提案 → 规格与设计 → 设计评审 → 任务 → 实现及文档同步
+artifacts:
+  - id: research
+    generates: research.md
+    description: 可追溯的调研、现状和关键假设验证
+    template: research.md
+    instruction: 用中文撰写。先读取相关代码、配置、测试、已有规格和文档，再调查外部方案。明确问题、调查范围、来源及其日期/版本、已证实事实、推断和未验证项。关键结论绑定证据编号；关键实验写命令、条件、预期和实际结果。对影响需求、方案或任务的未知项先继续调查或请求澄清，不得自行补全。调研可以得出停止或暂缓的结论；此时保留报告并停止后续实施。保留排除方案的理由，不设最低篇幅或来源数量。
+    requires: []
+  - id: proposal
+    generates: proposal.md
+    description: 变更动机、范围、能力与影响
+    template: proposal.md
+    instruction: 用中文撰写，保留 Why、What Changes、Capabilities、New Capabilities、Modified Capabilities 和 Impact 章节。引用 research.md，不重复复制证据。读取已有 specs，复用现有能力的名称；只为外部行为变化声明能力。每个声明能力对应一个增量规格。记录已证实现状、拟议目标及受影响的长期文档路径；破坏性改动标记 BREAKING。没有行为变化时使用仓库支持的纯文档/重构流程，不为验证而虚构规格。
+    requires:
+      - research
+  - id: specs
+    generates: specs/**/*.md
+    description: 可验证的外部行为增量规格
+    template: spec.md
+    instruction: "说明使用中文，保留 OpenSpec 解析标题和规范词。按提案能力创建 specs/<capability>/spec.md，已有能力沿用其确切目录。增量操作使用 ## ADDED Requirements、## MODIFIED Requirements、## REMOVED Requirements、## RENAMED Requirements。每条要求以 ### Requirement: 开头，用 SHALL/MUST 表达可观察行为；至少有一个 #### Scenario:，写 WHEN/THEN 条件与结果。MODIFIED 须复制已有要求全文及全部场景再改动，不遗漏未改变场景。REMOVED 写 Reason/Migration，RENAMED 用 FROM:/TO:。内部选型、类名及实施步骤不放进规格。使用仓库已安装版本的 validate 检查格式。"
+    requires:
+      - proposal
+  - id: design
+    generates: design.md
+    description: 系统设计、关键链路和长期文档影响
+    template: design.md
+    instruction: 用中文撰写 design.md。此 schema 针对探索性/系统性变更，设计为必需产物；局部低风险变更使用项目原 schema。引用 research.md、规格、已有架构和 ADR。说明当前系统与目标变化，按实际影响覆盖结构、关键运行链路、数据所有权及一致性、失败恢复、部署迁移、质量目标和验证方法。保留适用章节，删去无关章节。用图承载结构和动态行为，不写逐行实现计划。明确文档影响：目标路径、更新内容、对应代码/证据、负责人或待指定。影响方案或任务的未知项必须在实施前解决；仅可保留可延期问题。
+    requires:
+      - proposal
+      - specs
+  - id: review
+    generates: review.md
+    description: 设计评审、阻塞项和进入实施的判定
+    template: review.md
+    instruction: 用中文撰写。按仓库评审要求检查研究证据、规格、设计、现有系统约束和文档影响。先写发现，再写结论；结论只能是待评审、需修改或可进入实施。为每个发现记录证据、严重程度、处理结果及相关变更。阻塞项未解决不能标为可进入实施。记录实际评审者、角色/方式、日期及评审文件版本；AI 自查只能称为 AI 自查，不能声称获得人工批准。人工审批仅在用户或仓库规则要求时作为必需门槛。结论需在后续任务和实施中重新核对。
+    requires:
+      - specs
+      - design
+  - id: tasks
+    generates: tasks.md
+    description: 同步代码、测试和长期文档的可验证任务
+    template: tasks.md
+    instruction: 用中文撰写。首先核对 review.md 为可进入实施且无未解决阻塞项，并满足仓库规则；否则不要生成可执行任务。任务按依赖组织成编号章节，每条用 - [ ] X.Y 描述，写具体路径和验证方法；只有实际验证完成才能用 - [x]。每个实施组同步其测试和长期文档，不集中拖到最后。最终集成组包含仓库集成检查、关键文档示例验证和依据 docs/templates/delivery.md 撰写的 delivery.md 交付说明。archive 属于任务完成后的外部步骤，在末尾用普通列表记录，不列为实施前需勾选的任务。
+    requires:
+      - review
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
+  instruction: 先读取 research、proposal、specs、design、review 和 tasks。文件存在不等于评审通过：核对 review.md 的结论、未解决阻塞项以及仓库要求的审批。未通过则先修订调研/设计并重新评审。按组实现、测试并同步长期文档；只在实际验证后勾选任务。设计或证据变化时先更新相应产物及评审；不要继续执行已失效计划。实际运行项目检查并记录结果。完成时写 delivery.md，列出变更、验证、文档更新、当前适用提交、限制及交接事项。归档由交付后的步骤处理。
